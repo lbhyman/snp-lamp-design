@@ -19,7 +19,7 @@ class Probe:
         self.MUTATION_RATE = MUTATION_RATE
         self.truncations = truncations
         self.beta = [0,0,0,0]
-        if truncations is None:
+        if len(truncations) == 0:
             self.truncations = tu.generate_truncations(len(self.SNP),self.minlength)
             self.id_to_sequence(self.truncations)
             while (not self.screen()):
@@ -188,7 +188,7 @@ class Probe:
         probe.append(sink_SNP_dist)
         probe.append(sinkC_SNP_dist)
         # Test if the probe falls within the high-fitness PCA region
-        pca = pk.load(open("pca.pkl",'rb'))
+        pca = pk.load(open("../data/pca.pkl",'rb'))
         probe = np.array(probe)
         params_trans = pca.transform(probe.reshape(1,-1))
         if (params_trans[0][0] < 15 and params_trans[0][1] > -20 and params_trans[0][0] > -60 and params_trans[0][1] < 60):

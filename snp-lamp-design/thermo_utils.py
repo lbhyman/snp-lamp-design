@@ -4,7 +4,6 @@ import subprocess as sub
 import random as rnd
 
 # Quick, approximate Tm calculation for a DNA sequence without using nupack
-@staticmethod
 def TM(sequence):
     if len(sequence) < 1:
         return 1.0
@@ -17,7 +16,6 @@ def TM(sequence):
         return float(4*GC_count + 2*AT_count)
 
 # Returns the reverse complement of the input DNA sequence
-@staticmethod    
 def reverse_complement(sequence):
     sequence = sequence[::-1].upper()
     sequence = sequence.replace('A','1').replace('T','2').replace('G','3').replace('C','4')
@@ -25,7 +23,6 @@ def reverse_complement(sequence):
     return sequence
 
 # Truncate a DNA sequence to a specific length
-@staticmethod
 def truncate(sequence, end, trunc_size=1):
     length = len(sequence)
     if end == 3:
@@ -38,7 +35,6 @@ def truncate(sequence, end, trunc_size=1):
     return sequence
 
 # Randomly truncate a DNA sequence
-@staticmethod
 def generate_truncations(seqlength,minlength):
     # Probe truncations
     trunc_length = rnd.randint(0,seqlength-minlength)
@@ -66,7 +62,6 @@ def generate_truncations(seqlength,minlength):
     return output
 
 # Generate auxilliary 'concentrations' file for nupack
-@staticmethod
 def generate_con_file(concentrations,prefix='temp'):
     filename = prefix + '.con'
     outfile = open(filename,'w')
@@ -74,8 +69,7 @@ def generate_con_file(concentrations,prefix='temp'):
         outfile.write(str(con)+'\n')
     outfile.close()
 
-# Wrapper for the nupack 'complexes' function
-@staticmethod        
+# Wrapper for the nupack 'complexes' function     
 def complexes(params,prefix='temp'):
     if (prefix+'.ocx') in os.listdir('./'):
         os.remove(prefix+'.ocx')
@@ -84,7 +78,6 @@ def complexes(params,prefix='temp'):
     sub.Popen.wait(call)
 
 # Wrapper for the nupack 'concentrations' function
-@staticmethod  
 def concentrations(params,prefix='temp'):
     if (prefix+'.eq') in os.listdir('./'):
         os.remove(prefix+'.eq')
@@ -92,8 +85,7 @@ def concentrations(params,prefix='temp'):
     call = sub.Popen(args, stdin=sub.PIPE, stdout=sub.PIPE, stderr=sub.STDOUT)
     sub.Popen.wait(call)
 
-# Calculate the proportion of fluorescent probe which is unquenched
-@staticmethod    
+# Calculate the proportion of fluorescent probe which is unquenched 
 def get_activation(input_concentrations,normal_concentrations,params,prefix='temp'):
     generate_con_file(input_concentrations)
     complexes(params)
@@ -112,7 +104,6 @@ def get_activation(input_concentrations,normal_concentrations,params,prefix='tem
         return -1
 
 # Delete auxilliary files used by nupack    
-@staticmethod
 def cleanup(prefix='temp'):
     filenames = [prefix+'.con',prefix+'.ocx',prefix+'.eq',prefix+'.in']
     for filename in filenames:

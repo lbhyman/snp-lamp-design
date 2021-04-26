@@ -52,7 +52,7 @@ class GAOptimizer:
     def generate_initial_population(self):
         population = []
         for i in range(self.population_size):
-            parent = Probe.Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+            parent = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
             self.calculate_fitness(parent)
             population.append(parent)
             parent.display()
@@ -78,7 +78,7 @@ class GAOptimizer:
             parent_2 = rnd.choice(parents)
             # Improve diversity by introducing randomness when parents are identical
             if(parent_2.get_truncations() == parent_1.get_truncations()):
-                parent_2 = Probe.Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+                parent_2 = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
             if(parent_2.get_truncations() == parent_1.get_truncations()):
                 if(rnd.random() < 0.5):
                     child = parent_1.cross(parent_2)
@@ -118,7 +118,7 @@ class GAOptimizer:
             next_truncs = best_probe.next_iteration()
             best_beta = best_probe.get_beta()[0]
             for trunc in next_truncs:
-                curr_probe = Probe.Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,  
+                curr_probe = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,  
                     self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate, 
                         truncations=trunc)
                 self.calculate_fitness(curr_probe)
