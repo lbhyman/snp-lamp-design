@@ -74,6 +74,7 @@ def complexes(params,prefix='temp'):
     if (prefix+'.ocx') in os.listdir('./'):
         os.remove(prefix+'.ocx')
     args = os.environ['NUPACKHOME'] + "/build/bin/complexes " + prefix + params
+    args = args.split(' ')
     call = sub.Popen(args, stdin=sub.PIPE, stdout=sub.PIPE, stderr=sub.STDOUT)
     sub.Popen.wait(call)
 
@@ -82,6 +83,7 @@ def concentrations(params,prefix='temp'):
     if (prefix+'.eq') in os.listdir('./'):
         os.remove(prefix+'.eq')
     args = os.environ['NUPACKHOME'] + "/build/bin/concentrations " + prefix + params
+    args = args.split(' ')
     call = sub.Popen(args, stdin=sub.PIPE, stdout=sub.PIPE, stderr=sub.STDOUT)
     sub.Popen.wait(call)
 
