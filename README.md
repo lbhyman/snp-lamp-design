@@ -5,5 +5,4 @@ A pre-print of this manuscript can be found here: https://www.biorxiv.org/conten
 
 Requirements:
 
-- Be sure to have Nupack version 3.2 installed. The Nupack package can be downloaded here: http://nupack.org/downloads/register.
-- Upon successful Nupack installation, be sure to set the 'NUPACKHOME' variable found in constants.env.
+- Be sure to have Nupack version 4 installed. The Nupack package can be downloaded here: http://nupack.org/downloads/register.
