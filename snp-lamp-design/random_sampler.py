@@ -31,7 +31,7 @@ class RandomSampler(GAOptimizer):
         outfile.write('Probe 5 trunc,Probe 3 trunc,Probe* 5 trunc,Probe* 3 trunc,Probe blunt end,Sink 5 trunc,Sink 3 trunc,Sink* 5 trunc,Sink* 3 trunc,beta,self.SNP activation,self.WT activation,Background activation\n')
         for i in range(iterations):
             print('Iteration: '+str(i))
-            p = Probe.Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+            p = Probe.Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
             p.display()
             for t in p.truncations:
                 outfile.write(str(t)+',')
@@ -50,7 +50,7 @@ class RandomSampler(GAOptimizer):
             self.SNP = sequences[0]
             self.WT = sequences[1]
             self.SNP_index = sequences[2]
-            p = Probe.Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+            p = Probe.Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
             p.display()
             for t in p.truncations:
                 outfile.write(str(t)+',')

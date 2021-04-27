@@ -3,27 +3,26 @@ import random as rnd
 import functools
 import pickle as pk
 import thermo_utils as tu
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning) 
 
 # Designates a fluorogenic probe set, including sequences and useful methods during GA and hill-climbing optimization
 @functools.total_ordering
 class Probe:
     
-    def __init__(self,SNP,WT,minlength,normal_concentrations,SNP_concentrations,WT_concentrations,params,MUTATION_RATE,truncations=[]):
-        self.SNP = SNP
-        self.WT = WT
+    def __init__(self,SNP,WT,minlength,concentrations,params,MUTATION_RATE,truncations=[]):
+        self.sequences = {'non_mut_target': WT, 'mut_target': SNP}
         self.minlength = minlength
-        self.normal_concentrations = normal_concentrations
-        self.SNP_concentrations = SNP_concentrations
-        self.WT_concentrations = WT_concentrations
+        self.concentrations = concentrations
         self.params = params
         self.MUTATION_RATE = MUTATION_RATE
         self.truncations = truncations
         self.beta = [0,0,0,0]
         if len(truncations) == 0:
-            self.truncations = tu.generate_truncations(len(self.SNP),self.minlength)
+            self.truncations = tu.generate_truncations(len(self.sequences['mut_target']),self.minlength)
             self.id_to_sequence(self.truncations)
             while (not self.screen()):
-                self.truncations = tu.generate_truncations(len(self.SNP),self.minlength)
+                self.truncations = tu.generate_truncations(len(self.sequences['mut_target']),self.minlength)
                 self.id_to_sequence(self.truncations)
         self.id_to_sequence(self.truncations)
     
@@ -36,13 +35,13 @@ class Probe:
         return self.beta[0] == other.beta[0]
     
     def get_sequences(self):
-        return [self.probe,self.probeC,self.sink,self.sinkC,self.WT,self.SNP]
+        return self.sequences
     
     def get_truncations(self):
         return self.truncations
     
     def get_key(self):
-        return ','.join(str(elem) for elem in self.truncations)+','+self.SNP+','+self.WT
+        return ','.join(str(elem) for elem in self.truncations)+','+self.sequences['mut_target']+','+self.sequences['non_mut_target']
     
     def get_beta(self):
         return self.beta
@@ -52,40 +51,23 @@ class Probe:
     
     # Convert truncation representation to sequence representation    
     def id_to_sequence(self,seq_id):
-        SNP_comp = tu.reverse_complement(self.SNP)
-        self.probe = tu.truncate(tu.truncate(SNP_comp,5,seq_id[0]),3,seq_id[1])
-        self.probeC = tu.truncate(tu.truncate(self.SNP,5,seq_id[2]),3,seq_id[3])
-        WT_comp = tu.reverse_complement(self.WT)
-        self.sink = tu.truncate(tu.truncate(WT_comp,5,seq_id[5]),3,seq_id[6])
-        self.sinkC = tu.truncate(tu.truncate(self.WT,5,seq_id[7]),3,seq_id[8])
-    
-    # Create auxilliary sequence file for nupack calculations
-    def generate_input_file(self,Lmax=2,prefix='temp'):
-        sequences = [self.probe,self.probeC,self.sink,self.sinkC,self.WT,self.SNP]
-        filename = prefix + '.in'
-        outfile = open(filename,'w')
-        outfile.write('6\n')
-        for seq in sequences:
-            outfile.write(seq+'\n')
-        outfile.write(str(Lmax))
-        outfile.close()
+        SNP_comp = tu.reverse_complement(self.sequences['mut_target'])
+        self.sequences['probeF'] = tu.truncate(tu.truncate(SNP_comp,5,seq_id[0]),3,seq_id[1])
+        self.sequences['probeQ'] = tu.truncate(tu.truncate(self.sequences['mut_target'],5,seq_id[2]),3,seq_id[3])
+        WT_comp = tu.reverse_complement(self.sequences['non_mut_target'])
+        self.sequences['sink'] = tu.truncate(tu.truncate(WT_comp,5,seq_id[5]),3,seq_id[6])
+        self.sequences['sinkC'] = tu.truncate(tu.truncate(self.sequences['non_mut_target'],5,seq_id[7]),3,seq_id[8])
     
     # Calculate probe fitness    
     def calc_beta(self):
-        self.generate_input_file()
-        background = tu.get_activation(self.normal_concentrations,self.normal_concentrations,self.params)
-        if background < 0:
-            background = 0
-        SNP = tu.get_activation(self.SNP_concentrations,self.normal_concentrations,self.params) - background
-        WT = tu.get_activation(self.WT_concentrations,self.normal_concentrations,self.params) - background
-        if WT < 0:
-            WT = 0.0
-        if SNP <= 0:
-            self.beta = [0, SNP, WT, background]
-            return [0, SNP, WT, background]
-        b = SNP * np.log10(SNP/max(WT,background,0.0001))
-        self.beta = [b, SNP, WT, background]
-        return [b, SNP, WT, background]
+        try:
+            background, SNP, WT = tu.get_activation(self.sequences, self.concentrations, self.params)
+            b = SNP * np.log10(SNP/max(WT,background,0.0001))
+            self.beta = [b, SNP, WT, background]
+            return [b, SNP, WT, background]
+        except:
+            self.beta = [0,0,0,0]
+            return [0,0,0,0]
 
     # Randomly change one truncation when probe is mutated during GA
     def mutate(self):
@@ -112,7 +94,7 @@ class Probe:
         sink_options = [self.truncations[5:],other_probe.truncations[5:]]
         choice = rnd.choice([0,1])
         new_truncations = probe_options[choice] + sink_options[1-choice]
-        child = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.MUTATION_RATE,truncations=new_truncations)
+        child = Probe(self.sequences['mut_target'],self.sequences['non_mut_target'],self.minlength,self.concentrations,self.params,self.MUTATION_RATE,truncations=new_truncations)
         child.mutate()
         return child
     
@@ -136,13 +118,13 @@ class Probe:
     def screen(self):
         probe = []
         # Determine probe and sink sequences
-        SNP = self.SNP
-        WT = self.WT
+        SNP = self.sequences['mut_target']
+        WT = self.sequences['non_mut_target']
         tokenized = self.truncations
-        probe_seq = self.probe
-        probe_duplex = self.probeC
-        sink_seq = self.sink
-        sink_duplex = self.sinkC
+        probe_seq = self.sequences['probeF']
+        probe_duplex = self.sequences['probeQ']
+        sink_seq = self.sequences['sink']
+        sink_duplex = self.sequences['sinkC']
         # Add probe Tms
         probe.append(tu.TM(probe_duplex))
         probe.append(tu.TM(probe_seq))
@@ -201,8 +183,8 @@ class Probe:
         print('SNP Activation: ' + str(self.beta[1]))
         print('WT Activation: ' + str(self.beta[2]))
         print('Background: ' + str(self.beta[3]))
-        print('probe: ' + self.probe)
-        print('probe*: ' + self.probeC)
-        print('sink: ' + self.sink)
-        print('sink*: ' + self.sinkC + '\n')
+        print('probe: ' + self.sequences['probeF'])
+        print('probe*: ' + self.sequences['probeQ'])
+        print('sink: ' + self.sequences['sink'])
+        print('sink*: ' + self.sequences['sinkC'] + '\n')
     

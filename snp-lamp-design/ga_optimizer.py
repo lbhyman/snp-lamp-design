@@ -6,10 +6,13 @@ from probe import Probe
 class GAOptimizer:
     
     def __init__(self, WT, SNP, SNP_index=-1, \
-            normal_concentrations=['1e-7','1e-7','1e-7','1e-7','0e1','0e1'], \
-            SNP_concentrations=['1e-7','1e-7','1e-7','1e-7','0e1','1e-7'], \
-            WT_concentrations=['1e-7','1e-7','1e-7','1e-7','1e-7','0e1'], \
-            minlength=6, params='', generations=6, pop_size=128, num_parents=64, mut_rate=0.5):
+            concentrations = {'non_mut_target' : 1e-7,
+                     'mut_target': 1e-7,
+                     'probeF' : 1e-7,
+                     'probeQ' : 1e-7,
+                     'sink' : 1e-7,
+                     'sinkC' : 1e-7},
+            minlength=6, params={}, generations=6, pop_size=128, num_parents=64, mut_rate=0.5):
         # GA hyperparameters
         self.population_size = pop_size
         self.num_parents = num_parents
@@ -31,9 +34,7 @@ class GAOptimizer:
                     self.SNP_index = i
                     break
         # Concentrations of each strand in M
-        self.normal_concentrations = normal_concentrations
-        self.SNP_concentrations = SNP_concentrations
-        self.WT_concentrations = WT_concentrations
+        self.concentrations = concentrations
         # Buffer Conditions
         self.params = params
         # Store fitness of previously encountered probes to improve efficiency
@@ -52,7 +53,7 @@ class GAOptimizer:
     def generate_initial_population(self):
         population = []
         for i in range(self.population_size):
-            parent = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+            parent = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
             self.calculate_fitness(parent)
             population.append(parent)
             parent.display()
@@ -78,7 +79,7 @@ class GAOptimizer:
             parent_2 = rnd.choice(parents)
             # Improve diversity by introducing randomness when parents are identical
             if(parent_2.get_truncations() == parent_1.get_truncations()):
-                parent_2 = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate)
+                parent_2 = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
             if(parent_2.get_truncations() == parent_1.get_truncations()):
                 if(rnd.random() < 0.5):
                     child = parent_1.cross(parent_2)
@@ -118,9 +119,8 @@ class GAOptimizer:
             next_truncs = best_probe.next_iteration()
             best_beta = best_probe.get_beta()[0]
             for trunc in next_truncs:
-                curr_probe = Probe(self.SNP,self.WT,self.minlength,self.normal_concentrations,  
-                    self.SNP_concentrations,self.WT_concentrations,self.params,self.mutation_rate, 
-                        truncations=trunc)
+                curr_probe = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params, \
+                    self.mutation_rate, truncations=trunc)
                 self.calculate_fitness(curr_probe)
                 this_beta = curr_probe.get_beta()[0]
                 curr_probe.display()

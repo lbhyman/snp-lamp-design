@@ -1,16 +1,6 @@
 import argparse
-import sys
-from os import environ
-from pathlib import Path
-from dotenv import load_dotenv
+import warnings
 from ga_optimizer import GAOptimizer
-import thermo_utils as tu
-
-# Establish path to nupack installation
-def setup_environment():
-    load_dotenv(Path('..') / 'constants.env')
-    nupackhome = environ.get('NUPACKHOME', '../nupack3.2.2')
-    environ['NUPACKHOME'] = nupackhome
 
 # Handle user input
 def parse_arguments():
@@ -33,18 +23,16 @@ def parse_arguments():
     parser.add_argument('-P', '--pop_size', type=int,
                         default=128, help='initial population size')
     args = parser.parse_args()
-    params = " -T "+str(args.temperature)+" -material "+'DNA'+" -sort 0 -sodium " + \
-        str(args.sodium)+" -magnesium "+str(args.magnesium)
+    params = {'temperature': args.temperature, 'sodium': args.sodium, 'magnesium': args.magnesium}
     return args, params
 
 # Generate optimal probe and print output
 def main(args=None):
-    setup_environment()
+    warnings.filterwarnings("ignore", category=UserWarning) 
     args, params = parse_arguments()
     optimizer = GAOptimizer(WT=args.Non_SNP, SNP=args.SNP, params=params, minlength=args.minlength,
                             mut_rate=args.mutation_rate, pop_size=args.pop_size, SNP_index=args.mut_index)
     optimizer.run()
-    tu.cleanup()
 
 if __name__ == "__main__":
     main()

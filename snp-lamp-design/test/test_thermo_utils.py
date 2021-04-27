@@ -11,7 +11,7 @@ class TestThermoUtils(unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test_get_activation_new(self):
+    def test_get_activation(self):
         sequences = {'non_mut_target' : 'TAAACAATCTATACAGGTAATTATAATTACCACCAACCTT',
                      'mut_target' : 'TAAACAATCTAAACAGGTAATTATAATTACCACCAACCTT',
                      'probeF' : 'AAGGTTGGTGGTAATTATAATTACCTGTTTAGATTGTTTA',
@@ -27,9 +27,7 @@ class TestThermoUtils(unittest.TestCase):
                      'sinkC' : 1e-7}
         
         params = {'temperature':21, 'sodium':0.065, 'magnesium':0.008}
-        result = tu.get_activation_new(sequences, concentrations, params)
-        keys = list(result.tubes.keys())[0]
-        print(result['initial_state'].ensemble_pair_fractions)
+        result = tu.get_activation(sequences, concentrations, params)
         
 if __name__ == '__main__':
     unittest.main()
