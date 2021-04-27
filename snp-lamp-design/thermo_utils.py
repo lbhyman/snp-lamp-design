@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess as sub
 import random as rnd
+import nupack as nu
 
 # Quick, approximate Tm calculation for a DNA sequence without using nupack
 def TM(sequence):
@@ -13,6 +14,7 @@ def TM(sequence):
         # Wallace Formula - Wallace RB et al. (1979) Nucleic Acids Res 6:3543-3557, PMID 158748
         return 64.9 +41.0*(GC_count-16.4)/(GC_count+AT_count)
     else:
+        # Marmur Formula
         return float(4*GC_count + 2*AT_count)
 
 # Returns the reverse complement of the input DNA sequence
@@ -86,6 +88,32 @@ def concentrations(params,prefix='temp'):
     args = args.split(' ')
     call = sub.Popen(args, stdin=sub.PIPE, stdout=sub.PIPE, stderr=sub.STDOUT)
     sub.Popen.wait(call)
+
+# Updated for nupack 4
+def get_activation_new(sequences, concentrations, params):
+    model = nu.Model(material='dna', celsius=params['temperature'], sodium=params['sodium'], magnesium=params['magnesium'])
+    probeF = nu.Strand(sequences['probeF'], name='probeF')
+    probeQ = nu.Strand(sequences['probeQ'], name='probeQ')
+    sink = nu.Strand(sequences['sink'], name='sink')
+    sinkC = nu.Strand(sequences['sinkC'], name='sinkC')
+    non_mut_target = nu.Strand(sequences['non_mut_target'], name='non_mut_target')
+    mut_target = nu.Strand(sequences['mut_target'], name='mut_target')
+    initial_state = nu.Tube(strands={probeF:concentrations['probeF'],probeQ:concentrations['probeQ'],
+                                     sink:concentrations['sink'],sinkC:concentrations['sinkC']},
+                            complexes=nu.SetSpec(max_size=2, include=[[probeF,probeQ,sink,sinkC]]),
+                            name='initial_state')
+    mut_state = nu.Tube(strands={probeF:concentrations['probeF'],probeQ:concentrations['probeQ'],
+                                     sink:concentrations['sink'],sinkC:concentrations['sinkC'],
+                                     mut_target:concentrations['mut_target']},
+                            complexes=nu.SetSpec(max_size=2, include=[[probeF,probeQ,sink,sinkC,mut_target]]),
+                            name='mut_state')
+    non_mut_state = nu.Tube(strands={probeF:concentrations['probeF'],probeQ:concentrations['probeQ'],
+                                     sink:concentrations['sink'],sinkC:concentrations['sinkC'],
+                                     non_mut_target:concentrations['non_mut_target']},
+                            complexes=nu.SetSpec(max_size=2, include=[[probeF,probeQ,sink,sinkC,non_mut_target]]),
+                            name='non_mut_state')
+    result = nu.tube_analysis(tubes=[initial_state,mut_state,non_mut_state], compute=['pairs', 'mfe'], model=model)
+    return result
 
 # Calculate the proportion of fluorescent probe which is unquenched 
 def get_activation(input_concentrations,normal_concentrations,params,prefix='temp'):
