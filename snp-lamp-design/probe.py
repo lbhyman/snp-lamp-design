@@ -3,8 +3,6 @@ import random as rnd
 import functools
 import pickle as pk
 import thermo_utils as tu
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning) 
 
 # Designates a fluorogenic probe set, including sequences and useful methods during GA and hill-climbing optimization
 @functools.total_ordering
@@ -117,25 +115,14 @@ class Probe:
     # Determine whether the probe falls within the high-fitness design space by PCA
     def screen(self):
         probe = []
-        # Determine probe and sink sequences
-        SNP = self.sequences['mut_target']
-        WT = self.sequences['non_mut_target']
+        SNP, WT, probe_seq, probe_duplex, sink_seq, sink_duplex = self.sequences['mut_target'], self.sequences['non_mut_target'], \
+            self.sequences['probeF'], self.sequences['probeQ'], self.sequences['sink'], self.sequences['sinkC']
         tokenized = self.truncations
-        probe_seq = self.sequences['probeF']
-        probe_duplex = self.sequences['probeQ']
-        sink_seq = self.sequences['sink']
-        sink_duplex = self.sequences['sinkC']
-        # Add probe Tms
-        probe.append(tu.TM(probe_duplex))
-        probe.append(tu.TM(probe_seq))
-        # Add sink Tms
-        probe.append(tu.TM(sink_duplex))
-        probe.append(tu.TM(sink_seq))
+        # Add Tms
+        probe = probe + [tu.TM(probe_duplex), tu.TM(probe_seq), tu.TM(sink_duplex), tu.TM(sink_seq)]
         # Add Tm ratios
-        probe.append(tu.TM(probe_duplex)-tu.TM(sink_duplex))
-        probe.append(tu.TM(probe_seq)-tu.TM(sink_seq))
-        probe.append(tu.TM(probe_seq)-tu.TM(probe_duplex))
-        probe.append(tu.TM(sink_seq)-tu.TM(sink_duplex))
+        probe = probe + [tu.TM(probe_duplex)-tu.TM(sink_duplex), tu.TM(probe_seq)-tu.TM(sink_seq), \
+            tu.TM(probe_seq)-tu.TM(probe_duplex), tu.TM(sink_seq)-tu.TM(sink_duplex)]
         # Add SNP proximity to ends
         SNP_pos = 0
         for i in range(len(SNP)):
@@ -144,36 +131,22 @@ class Probe:
         probe_3_dist = len(SNP) - 1 - tokenized[0] - SNP_pos
         probe_5_dist = SNP_pos - tokenized[1]
         probe_SNP_dist = min(probe_3_dist,probe_5_dist)
-        probe_covered = 1
-        if(probe_SNP_dist < 0):
-            probe_covered = 0
         probeC_3_dist = len(SNP) - 1 - tokenized[3] - SNP_pos
         probeC_5_dist = SNP_pos - tokenized[2]
         probeC_SNP_dist = min(probeC_3_dist,probeC_5_dist)
-        probeC_covered = 1
-        if(probeC_SNP_dist < 0):
-            probeC_covered = 0
         sink_3_dist = len(SNP) - 1 - tokenized[0] - SNP_pos
         sink_5_dist = SNP_pos - tokenized[1]
         sink_SNP_dist = min(sink_3_dist,sink_5_dist)
-        sink_covered = 1
-        if(sink_SNP_dist < 0):
-            sink_covered = 0
         sinkC_3_dist = len(SNP) - 1 - tokenized[3] - SNP_pos
         sinkC_5_dist = SNP_pos - tokenized[2]
         sinkC_SNP_dist = min(sinkC_3_dist,sinkC_5_dist)
-        sinkC_covered = 1
-        if(sinkC_SNP_dist < 0):
-            sinkC_covered = 0      
-        probe.append(probe_SNP_dist)
-        probe.append(probeC_SNP_dist)
-        probe.append(sink_SNP_dist)
-        probe.append(sinkC_SNP_dist)
+        probe = probe + [probe_SNP_dist, probeC_SNP_dist, sink_SNP_dist, sinkC_SNP_dist]
         # Test if the probe falls within the high-fitness PCA region
         pca = pk.load(open("../data/pca.pkl",'rb'))
         probe = np.array(probe)
         params_trans = pca.transform(probe.reshape(1,-1))
-        if (params_trans[0][0] < 15 and params_trans[0][1] > -20 and params_trans[0][0] > -60 and params_trans[0][1] < 60):
+        if (params_trans[0][0] < 15 and params_trans[0][1] > -20 and params_trans[0][0] > -60 and \
+            params_trans[0][1] < 60):
             return True
         return False
     

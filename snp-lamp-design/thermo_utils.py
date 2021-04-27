@@ -1,7 +1,5 @@
 import sys
-import os
 import math
-import subprocess as sub
 import random as rnd
 import nupack as nu
 # Allow nupack to use all available cores
