@@ -1,0 +1,108 @@
+.App {
+  margin: 0 auto;
+  width: 800px;
+}
+
+h1 {
+  text-align: center;
+  color: #555;
+}
+
+h2 {
+  text-align: center;
+  color: #555;
+}
+
+input {
+  padding-right: 20px;
+}
+
+label {
+  padding-left: 0px;
+  padding-right: 20px;
+}
+
+.conditionentry .condition-form {
+  float: right;
+  clear: both;
+  margin-bottom: 5px;
+}
+
+.conditionentry {
+  float: left;
+  clear: both;
+  width: 376px;
+}
+
+.sequenceentry {
+  float: left;
+  clear: both;
+  width: 800px;
+  margin-bottom: 20px;
+}
+
+.sequenceentry .seq-form {
+  float: right;
+  clear: both;
+  margin-bottom: 5px;
+}
+
+.sequenceentry .seq-form input {
+  width: 595px;
+}
+
+.startstopbuttons {
+  width: 400px;
+  float: left;
+  clear: both;
+  margin-top: 10px;
+}
+
+.startstopbuttons .startbutton {
+  margin-left: 82px;
+}
+
+.startstopbuttons .stopbutton {
+  margin-left: 15px;
+}
+
+.popslider {
+  margin-top: 20px;
+  width: 376px;
+  float: left;
+  clear: both;
+}
+
+.popslider .sliderlabel {
+  float: left;
+  clear: both;
+}
+
+
+.progress .progressbar {
+  margin-left: 100px;
+}
+
+.progress .proglabel {
+  color: #555;
+}
+
+.outputsequences {
+  float: right;
+  clear: both;
+  margin-top: -245px;
+  width: 390px;
+}
+
+.outputsequences .sequencelabels {
+  float: left;
+  clear: both;
+  width: 70px;
+}
+
+.outputsequences .outsequences {
+  float: right;
+  clear: both;
+  margin-top: -157px;
+  width:300px;
+}
