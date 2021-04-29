@@ -1,3 +1,6 @@
+var fetch = require('node-fetch');
+import { useState } from 'react';
+
 const OutputSequences = () => {
     var probeF = '';
     var probeQ = '';

@@ -3,7 +3,6 @@ import ConditionEntry from './ConditionEntry';
 import PopSlider from './PopSlider';
 import Buttons from './Buttons';
 import Output from './Output';
-import { useState } from 'react';
 
 function App() {
     return (
