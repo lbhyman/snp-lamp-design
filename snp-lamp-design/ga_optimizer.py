@@ -40,10 +40,10 @@ class GAOptimizer:
         # Store fitness of previously encountered probes to improve efficiency
         self.probe_dict = {}
         # Estimate computation progress
-        self.progress = 150
+        self.progress = 0
         self.predicted_nupack_calls = self.predict_nupack_calls(self.population_size)
         self.running = False
-        self.output = {}
+        self.output = {'finished': False}
     
     # Estimate total number of required nupack calls during optimization    
     def predict_nupack_calls(self, pop_size):
@@ -156,7 +156,8 @@ class GAOptimizer:
         iter_GA = self.run_GA_taper()
         iter_hill, best_probe = self.hill_climb_optimize(iter_GA[-1])
         self.output = {'probeF': best_probe.sequences['probeF'], 'probeQ': best_probe.sequences['probeQ'], 
-                       'sink': best_probe.sequences['sink'], 'sinkC': best_probe.sequences['sinkC']}
+                       'sink': best_probe.sequences['sink'], 'sinkC': best_probe.sequences['sinkC'],
+                       'finished': True}
         self.running = False
         return iter_hill, best_probe
         
