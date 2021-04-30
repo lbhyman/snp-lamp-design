@@ -28,7 +28,7 @@ def parse_arguments():
 
 # Generate optimal probe and print output
 def main(args=None):
-    warnings.filterwarnings("ignore", category=UserWarning) 
+    warnings.filterwarnings("ignore") 
     args, params = parse_arguments()
     optimizer = GAOptimizer(WT=args.Non_SNP, SNP=args.SNP, params=params, minlength=args.minlength,
                             mut_rate=args.mutation_rate, pop_size=args.pop_size, SNP_index=args.mut_index)

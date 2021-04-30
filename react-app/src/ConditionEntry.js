@@ -1,5 +1,4 @@
 import { useState } from 'react';
-//var fetch = require('node-fetch');
 import NodeFetch from 'node-fetch';
 
 const ConditionEntry = () => {

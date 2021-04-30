@@ -1,8 +1,11 @@
 import random as rnd
 import math
+import json
+import sys
 from probe import Probe
 
 # Stores and optimizes potential probe sets using Genetic Algorithm and hill-climbing approaches
+# TODO: set up subprocess output
 class GAOptimizer:
     
     def __init__(self, WT='', SNP='', SNP_index=-1, \
@@ -42,8 +45,6 @@ class GAOptimizer:
         # Estimate computation progress
         self.progress = 0
         self.predicted_nupack_calls = self.predict_nupack_calls(self.population_size)
-        self.running = False
-        self.output = {'finished': False}
     
     # Estimate total number of required nupack calls during optimization    
     def predict_nupack_calls(self, pop_size):
@@ -51,12 +52,14 @@ class GAOptimizer:
         if out > 1:
             out += self.predict_nupack_calls(math.floor(pop_size / 2))
         else:
-            out += 50 # Assuming 5 rounds of hill-climbing optimization
+            out += 200 # Assuming 20 rounds of hill-climbing optimization
         return out
     
     # Determine the sensitivity and specificity of a given probe
     def calculate_fitness(self, probe):
         self.progress += 1
+        print('progress ' + str(float(self.progress) / float(self.predicted_nupack_calls)))
+        sys.stdout.flush()
         key = probe.get_key()
         if(key in self.probe_dict):
             probe.set_beta(self.probe_dict.get(key))
@@ -68,11 +71,10 @@ class GAOptimizer:
     def generate_initial_population(self):
         population = []
         for i in range(self.population_size):
-            if self.running:
-                parent = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
-                self.calculate_fitness(parent)
-                population.append(parent)
-                parent.display()
+            parent = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
+            self.calculate_fitness(parent)
+            population.append(parent)
+            #parent.display()
         population.sort(reverse=True)
         return population
 
@@ -88,42 +90,40 @@ class GAOptimizer:
         parents = list(parents.values())
         new_population = parents
         # Generate children
-        for parent in new_population:
-            parent.display()
+        #for parent in new_population:
+            #parent.display()
         for i in range(self.population_size - self.num_parents):
-            if self.running:
-                parent_1 = rnd.choice(parents)
-                parent_2 = rnd.choice(parents)
-                # Improve diversity by introducing randomness when parents are identical
-                if(parent_2.get_truncations() == parent_1.get_truncations()):
-                    parent_2 = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
-                if(parent_2.get_truncations() == parent_1.get_truncations()):
-                    if(rnd.random() < 0.5):
-                        child = parent_1.cross(parent_2)
-                    else:
-                        child = parent_2
-                else:
+            parent_1 = rnd.choice(parents)
+            parent_2 = rnd.choice(parents)
+            # Improve diversity by introducing randomness when parents are identical
+            if(parent_2.get_truncations() == parent_1.get_truncations()):
+                parent_2 = Probe(self.SNP,self.WT,self.minlength,self.concentrations,self.params,self.mutation_rate)
+            if(parent_2.get_truncations() == parent_1.get_truncations()):
+                if(rnd.random() < 0.5):
                     child = parent_1.cross(parent_2)
-                self.calculate_fitness(child)
-                new_population.append(child)
-                child.display()
+                else:
+                    child = parent_2
+            else:
+                child = parent_1.cross(parent_2)
+            self.calculate_fitness(child)
+            new_population.append(child)
+            #child.display()
         new_population.sort(reverse=True)
         return new_population
 
     # Produce an optimal probe via genetic algorithm
     def run_GA_taper(self):
         output = []
-        print("------------------Generation 0-------------------")
+        #print("------------------Generation 0-------------------")
         population = self.generate_initial_population()
         output.append(population[0])
         for i in range(self.generations):
-            if self.running:
-                print("------------------Generation " + str(i+1) + "-------------------")
-                new_population = self.run_generation(population)
-                population = new_population
-                output.append(population[0])
-                self.population_size = int(self.population_size/2)
-                self.num_parents = int(self.num_parents/2)
+            #print("------------------Generation " + str(i+1) + "-------------------")
+            new_population = self.run_generation(population)
+            population = new_population
+            output.append(population[0])
+            self.population_size = int(self.population_size/2)
+            self.num_parents = int(self.num_parents/2)
         return output
     
     # Further optimize a GA-produced probe using hill-climbing
@@ -133,7 +133,7 @@ class GAOptimizer:
         self.calculate_fitness(probe)
         best_beta = probe.get_beta()[0]
         best_probe = probe
-        while(last_beta != best_beta and self.running):
+        while(last_beta != best_beta):
             next_truncs = best_probe.next_iteration()
             best_beta = best_probe.get_beta()[0]
             for trunc in next_truncs:
@@ -141,23 +141,23 @@ class GAOptimizer:
                     self.mutation_rate, truncations=trunc)
                 self.calculate_fitness(curr_probe)
                 this_beta = curr_probe.get_beta()[0]
-                curr_probe.display()
+                #curr_probe.display()
                 if this_beta > best_beta:
                     best_beta = this_beta
                     best_probe = curr_probe
             iterations.append(best_probe)
             last_beta = iterations[-2].get_beta()[0]
-        best_probe.display()
+        #best_probe.display()
         return iterations[1:], best_probe
     
     # Run GA, followed by hill-climbing to produce an optimized probe
     def run(self):
-        self.running = True
         iter_GA = self.run_GA_taper()
         iter_hill, best_probe = self.hill_climb_optimize(iter_GA[-1])
         self.output = {'probeF': best_probe.sequences['probeF'], 'probeQ': best_probe.sequences['probeQ'], 
                        'sink': best_probe.sequences['sink'], 'sinkC': best_probe.sequences['sinkC'],
                        'finished': True}
-        self.running = False
+        print('output ' + json.dumps(self.output))
+        sys.stdout.flush()
         return iter_hill, best_probe
         

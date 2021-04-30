@@ -3,7 +3,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
 import { useState } from 'react';
 import { useEffect } from 'react';
-//var fetch = require('node-fetch');
 import NodeFetch from 'node-fetch';
 function CircularProgressWithLabel(props) {
     return (
@@ -29,20 +28,17 @@ CircularProgressWithLabel.propTypes = {
 };
 
 // Kill all running intervals
-/*var killId = setTimeout(function () {
+var killId = setTimeout(function () {
     for (var i = killId; i > 0; i--) {
         clearInterval(i);
     }
-}, 3000);*/
-
-
-
+}, 3000);
 
 const Output = () => {
     const [running, setRunning] = useState(false);
     const [finished, setFinished] = useState(false);
     const [progress, updateProgress] = useState(0);
-    const [output, updateOutput] = useState({ finished: false });
+    const [output, updateOutput] = useState({ finished: false});
 
     const getProgress = () => {
         NodeFetch('http://127.0.0.1:5000/get_progress',
@@ -68,6 +64,13 @@ const Output = () => {
                 return response.json();
             }).then(function (json) {
                 updateOutput(json);
+                if (output.hasOwnProperty('sinkC')) {
+                    var output_copy = output;
+                    if (output_copy['sinkC'].length < 7 || output_copy['sinkC'] === 'None Required') {
+                        output_copy['sinkC'] = 'None Required';
+                        updateOutput(output_copy);
+                    }
+                }
                 setFinished(json.finished);
             })
     }
@@ -82,14 +85,6 @@ const Output = () => {
         };
       }, []);
 
-    /*var mainLoop = setInterval(function () {
-        getProgress();
-        getOutput();
-    }, 10000);*/
-
-    //getProgress();
-    //getOutput();
-
     if (running) {
         return (
             <div className="progress">
@@ -99,7 +94,6 @@ const Output = () => {
         );
     }
     else if (finished) {
-        getOutput();
         return (
             <div className="outputsequences">
                 <h2>Output</h2>

@@ -1,6 +1,5 @@
 import Slider from '@material-ui/core/Slider';
 import { useState } from 'react';
-//var fetch = require('node-fetch');
 import NodeFetch from 'node-fetch';
 
 function valuetext(value) {

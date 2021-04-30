@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { useEffect } from 'react';
-//var fetch = require('node-fetch');
 import NodeFetch from 'node-fetch';
 
 const SequenceEntry = () => {
+
     const [WT, setWT] = useState();
     const [SNP, setSNP] = useState();
 
     const sendUpdate = (data) => {
-        //var data = {'WT': WT, 'SNP': SNP};
-
         NodeFetch('http://127.0.0.1:5000/send_input', 
 		{headers: {'Content-Type': 'application/json'},
 		method: 'POST',
@@ -18,26 +15,6 @@ const SequenceEntry = () => {
             return response.text();
         })
     }
-
-    /*
-    const handleWT = (event, newValue) => {
-        setWT(newValue);
-        sendUpdate();
-    };
-
-    const handleSNP = (event, newValue) => {
-        setSNP(newValue);
-        sendUpdate();
-    };*/
-
-    /*useEffect(() => {
-        const interval2 = setInterval(() => {
-            sendUpdate();
-        }, 1000);
-        return () => {
-          clearInterval(interval2);
-        };
-      }, []);*/
 
     return (
         <div className="sequenceentry">
