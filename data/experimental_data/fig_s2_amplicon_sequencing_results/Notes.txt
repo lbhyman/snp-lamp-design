@@ -1,0 +1,14 @@
+Matching sequences:
+MT-CO2: BIP
+P53: FIP
+NOTCH1: BIP reverse complement
+
+Codes:
+First letter:
+M = MT-CO2
+P = P53
+N = NOTCH1
+Second letter:
+M = MOLT-4
+S = SK-BR-3
+Example: M-M = MT-CO2 primer set with MOLT-4 total RNA

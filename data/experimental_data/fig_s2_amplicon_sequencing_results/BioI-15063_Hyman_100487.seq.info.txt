@@ -1,0 +1,20 @@
+Project: BioI-15063_Hyman_100487
+Project directory: P:\Data\09.16.20\BioI-15063\BioI-15063_Hyman_100487\
+Number of Reads: 12; Average quality: 24.5
+Trim quality value (window=20, threshold): 20
+Number of HQ reads: 8; Average quality: 36.8; Average length: 158
+
+         Read   Read Read   Trim   Trim
+Name     Length HQ   Q Ave. Length Q Ave.
+M-M_MBIP 1386   331  15.8   263    41.2
+M-M_MFIP 1362   201  10     252    47
+M-S_MBIP 1456   189  13.6   167    37.7
+M-S_MFIP 1280   198  9.77   250    46.8
+N-M_NBIP 1364   154  10.2   73     34.4
+N-M_NFIP 1361   39   3.34   0      0
+N-S_NBIP 1364   138  11.2   129    29.4
+N-S_NFIP 1326   101  7.27   0      0
+P-M_PBIP 1298   166  7.51   0      0
+P-M_PFIP 1396   146  11.4   29     28.3
+P-S_PBIP 1384   78   6.17   0      0
+P-S_PFIP 1380   207  11.6   103    29.4
